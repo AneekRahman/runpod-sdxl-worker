@@ -28,49 +28,81 @@ torch.cuda.empty_cache()
 
 # ------------------------------- Model Handler ------------------------------ #
 
+# Define Constants
+VAE_AUTOENCODER = "madebyollin/sdxl-vae-fp16-fix"
+REFINER_MODEL = "stabilityai/stable-diffusion-xl-refiner-1.0"
+BASE_MODEL = "RunDiffusion/Juggernaut-XL-v9"
 
+# Define ModelHandler object
 class ModelHandler:
     def __init__(self):
         self.base = None
         self.refiner = None
         self.load_models()
 
+    # Load base SDXL model
     def load_base(self):
+        # Get the floating point fix VAE
         vae = AutoencoderKL.from_pretrained(
-            "madebyollin/sdxl-vae-fp16-fix", torch_dtype=torch.float16)
+            VAE_AUTOENCODER, torch_dtype=torch.float16)
+
+        # Get the SDXL model
         base_pipe = StableDiffusionXLPipeline.from_pretrained(
-            "RunDiffusion/Juggernaut-XL-v9", vae=vae,
-            torch_dtype=torch.float16, variant="fp16", use_safetensors=True, add_watermarker=False
+            BASE_MODEL,
+            vae=vae,
+            torch_dtype=torch.float16, 
+            variant="fp16", 
+            use_safetensors=True, 
+            add_watermarker=False,
+            safety_checker=None # No safety checking
         )
+
+        # Use GPU for faster inference
         base_pipe = base_pipe.to("cuda", silence_dtype_warnings=True)
+
+        # Enable Xformers for memory efficieny. BUT SLOWER!!
         base_pipe.enable_xformers_memory_efficient_attention()
         return base_pipe
 
     def load_refiner(self):
+        # Get the floating point fix VAE
         vae = AutoencoderKL.from_pretrained(
-            "madebyollin/sdxl-vae-fp16-fix", torch_dtype=torch.float16)
+            VAE_AUTOENCODER, torch_dtype=torch.float16)
+        
+        # Get the SDXL Refiner model
         refiner_pipe = StableDiffusionXLImg2ImgPipeline.from_pretrained(
-            "stabilityai/stable-diffusion-xl-refiner-1.0", vae=vae,
-            torch_dtype=torch.float16, variant="fp16", use_safetensors=True, add_watermarker=False
+            REFINER_MODEL, 
+            torch_dtype=torch.float16,
+            vae=vae,
+            variant="fp16", 
+            use_safetensors=True, 
+            add_watermarker=False,
+            safety_checker=None # No safety checking
         )
+
+        # Use GPU for faster inference
         refiner_pipe = refiner_pipe.to("cuda", silence_dtype_warnings=True)
+
+        # Enable Xformers for memory efficieny. BUT SLOWER!!
         refiner_pipe.enable_xformers_memory_efficient_attention()
         return refiner_pipe
 
+    # Load models into memory
     def load_models(self):
         with concurrent.futures.ThreadPoolExecutor() as executor:
             future_base = executor.submit(self.load_base)
-            future_refiner = executor.submit(self.load_refiner)
+            # future_refiner = executor.submit(self.load_refiner)
 
             self.base = future_base.result()
-            self.refiner = future_refiner.result()
+            # self.refiner = future_refiner.result()
 
 
+# Initiate ModelHandler
 MODELS = ModelHandler()
 
 # ---------------------------------- Helper ---------------------------------- #
 
-
+# Uplad images to cloudflare
 def _save_and_upload_images(images, job_id):
     os.makedirs(f"/{job_id}", exist_ok=True)
     image_urls = []
@@ -91,6 +123,7 @@ def _save_and_upload_images(images, job_id):
     return image_urls
 
 
+# Map the schedulers
 def make_scheduler(name, config):
     return {
         "PNDM": PNDMScheduler.from_config(config),
@@ -102,32 +135,46 @@ def make_scheduler(name, config):
     }[name]
 
 
+# Main Entry function
 @torch.inference_mode()
 def generate_image(job):
-    '''
-    Generate an image from text using your Model
-    '''
+    # ------------------ INPUT ------------------
+    # Retrieve inputs
     job_input = job["input"]
 
-    # Input validation
+    # Validate input against rp_shemas.py
     validated_input = validate(job_input, INPUT_SCHEMA)
 
+    # Return error is found
     if 'errors' in validated_input:
         return {"error": validated_input['errors']}
+    
+    # Return structed/default input after validation
     job_input = validated_input['validated_input']
 
-    starting_image = job_input['image_url']
+    # Get image_url
+    image_url = job_input['image_url']
 
+    # Get seed
     if job_input['seed'] is None:
         job_input['seed'] = int.from_bytes(os.urandom(2), "big")
 
+    # ------------------ INPUT END ------------------
+
+    # Create diffusers generator using seed
     generator = torch.Generator("cuda").manual_seed(job_input['seed'])
 
-    MODELS.base.scheduler = make_scheduler(
-        job_input['scheduler'], MODELS.base.scheduler.config)
+    # Set the appropriate scheduler
+    MODELS.base.scheduler = make_scheduler(job_input['scheduler'], MODELS.base.scheduler.config)
 
-    if starting_image:  # If image_url is provided, run only the refiner pipeline
-        init_image = load_image(starting_image).convert("RGB")
+    # If image_url is provided, then run refiner to upscale image
+    if image_url:  
+        # Load image from URL
+        init_image = load_image(image_url).convert("RGB")
+
+        # TODO Resize image and then run refiner
+
+        # Run refiner to make it more HD
         output = MODELS.refiner(
             prompt=job_input['prompt'],
             num_inference_steps=job_input['refiner_inference_steps'],
@@ -136,8 +183,8 @@ def generate_image(job):
             generator=generator
         ).images
     else:
-        # Generate latent image using pipe
-        image = MODELS.base(
+        # Generate image using pipe
+        output = MODELS.base(
             prompt=job_input['prompt'],
             negative_prompt=job_input['negative_prompt'],
             height=job_input['height'],
@@ -145,51 +192,53 @@ def generate_image(job):
             num_inference_steps=job_input['num_inference_steps'],
             guidance_scale=job_input['guidance_scale'],
             denoising_end=job_input['high_noise_frac'],
-            output_type="latent",
+            # output_type="latent",
             num_images_per_prompt=job_input['num_images'],
             generator=generator
         ).images
 
-        try:
-            output = MODELS.refiner(
-                prompt=job_input['prompt'],
-                num_inference_steps=job_input['refiner_inference_steps'],
-                strength=job_input['strength'],
-                image=image,
-                num_images_per_prompt=job_input['num_images'],
-                generator=generator
-            ).images
-        except RuntimeError as err:
-            return {
-                "error": f"RuntimeError: {err}, Stack Trace: {err.__traceback__}",
-                "refresh_worker": True
-            }
+        # Disable refiner
+        # try:
+        #     output = MODELS.refiner(
+        #         prompt=job_input['prompt'],
+        #         num_inference_steps=job_input['refiner_inference_steps'],
+        #         strength=job_input['strength'],
+        #         image=output,
+        #         num_images_per_prompt=job_input['num_images'],
+        #         generator=generator
+        #     ).images
+        # except RuntimeError as err:
+        #     return {
+        #         "error": f"RuntimeError: {err}, Stack Trace: {err.__traceback__}",
+        #         "refresh_worker": True
+        #     }
 
-    # TODO Remove below in production
-    image_urls = _save_and_upload_images(output, "test_place")
+    # Upload images to cloudflare
+    image_urls = _save_and_upload_images(output, job['id'])
 
-    # TODO Uncomment this in production
-    # image_urls = _save_and_upload_images(output, job['id'])
-
+    # Response object
     results = {
         "images": image_urls,
         "image_url": image_urls[0],
         "seed": job_input['seed']
     }
 
-    if starting_image:
+    # Makes runpod refresh this worker. Eg. loaded files, variables etc
+    if image_url:
         results['refresh_worker'] = True
 
+    # Return results to client
     return results
 
 
 # TODO Remove below in production
 thisdict = {
+    "id": "test_id",
     "input": {
         "prompt": "A brown fox",
         "scheduler": "KarrasDPM",
-        "guidance_scale": 35,
-        "num_inference_steps": 4,
+        "guidance_scale": 5,
+        "num_inference_steps": 25,
     }
 }
 res = generate_image(thisdict)
