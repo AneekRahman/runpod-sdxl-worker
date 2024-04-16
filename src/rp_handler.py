@@ -98,6 +98,7 @@ def make_scheduler(name, config):
         "DDIM": DDIMScheduler.from_config(config),
         "K_EULER": EulerDiscreteScheduler.from_config(config),
         "DPMSolverMultistep": DPMSolverMultistepScheduler.from_config(config),
+        "KarrasDPM": DPMSolverMultistepScheduler.from_config(config, use_karras_sigmas=True),
     }[name]
 
 
@@ -164,9 +165,11 @@ def generate_image(job):
                 "refresh_worker": True
             }
 
-    # image_urls = _save_and_upload_images(output, job['id'])
     # TODO Remove below in production
     image_urls = _save_and_upload_images(output, "test_place")
+
+    # TODO Uncomment this in production
+    # image_urls = _save_and_upload_images(output, job['id'])
 
     results = {
         "images": image_urls,
@@ -180,18 +183,17 @@ def generate_image(job):
     return results
 
 
-# runpod.serverless.start({"handler": generate_image})
-
 # TODO Remove below in production
 thisdict = {
     "input": {
         "prompt": "A brown fox",
-        "scheduler": "DPMSolverMultistep",
-        "guidance_scale": 5,
-        "num_inference_steps": 5,
+        "scheduler": "KarrasDPM",
+        "guidance_scale": 35,
+        "num_inference_steps": 4,
     }
 }
 res = generate_image(thisdict)
-
 print(res)
 
+# TODO Uncomment this in production
+# runpod.serverless.start({"handler": generate_image})
