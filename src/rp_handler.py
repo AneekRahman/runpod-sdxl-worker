@@ -164,7 +164,9 @@ def generate_image(job):
                 "refresh_worker": True
             }
 
-    image_urls = _save_and_upload_images(output, job['id'])
+    # image_urls = _save_and_upload_images(output, job['id'])
+    # TODO Remove below in production
+    image_urls = _save_and_upload_images(output, "test_place")
 
     results = {
         "images": image_urls,
@@ -178,4 +180,18 @@ def generate_image(job):
     return results
 
 
-runpod.serverless.start({"handler": generate_image})
+# runpod.serverless.start({"handler": generate_image})
+
+# TODO Remove below in production
+thisdict = {
+    "input": {
+        "prompt": "A brown fox",
+        "scheduler": "DPMSolverMultistep",
+        "guidance_scale": 5,
+        "num_inference_steps": 5,
+    }
+}
+res = generate_image(thisdict)
+
+print(res)
+
