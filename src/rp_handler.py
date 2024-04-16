@@ -33,7 +33,7 @@ VAE_AUTOENCODER = "madebyollin/sdxl-vae-fp16-fix"
 REFINER_MODEL = "stabilityai/stable-diffusion-xl-refiner-1.0"
 BASE_MODEL = "RunDiffusion/Juggernaut-XL-v9"
 
-# Define ModelHandler object
+# Define ModelHandler Class
 class ModelHandler:
     def __init__(self):
         self.base = None
@@ -44,7 +44,9 @@ class ModelHandler:
     def load_base(self):
         # Get the floating point fix VAE
         vae = AutoencoderKL.from_pretrained(
-            VAE_AUTOENCODER, torch_dtype=torch.float16)
+            VAE_AUTOENCODER, 
+            torch_dtype=torch.float16
+        )
 
         # Get the SDXL model
         base_pipe = StableDiffusionXLPipeline.from_pretrained(
@@ -67,7 +69,9 @@ class ModelHandler:
     def load_refiner(self):
         # Get the floating point fix VAE
         vae = AutoencoderKL.from_pretrained(
-            VAE_AUTOENCODER, torch_dtype=torch.float16)
+            VAE_AUTOENCODER, 
+            torch_dtype=torch.float16
+        )
         
         # Get the SDXL Refiner model
         refiner_pipe = StableDiffusionXLImg2ImgPipeline.from_pretrained(
@@ -123,6 +127,11 @@ def _save_and_upload_images(images, job_id):
     return image_urls
 
 
+# Define KarrasDPM
+class KarrasDPM:
+    def from_config(config):
+        return DPMSolverMultistepScheduler.from_config(config, use_karras_sigmas=True)
+
 # Map the schedulers
 def make_scheduler(name, config):
     return {
@@ -131,7 +140,7 @@ def make_scheduler(name, config):
         "DDIM": DDIMScheduler.from_config(config),
         "K_EULER": EulerDiscreteScheduler.from_config(config),
         "DPMSolverMultistep": DPMSolverMultistepScheduler.from_config(config),
-        "KarrasDPM": DPMSolverMultistepScheduler.from_config(config, use_karras_sigmas=True),
+        "KarrasDPM": KarrasDPM.from_config(config),
     }[name]
 
 
@@ -223,7 +232,7 @@ def generate_image(job):
         "seed": job_input['seed']
     }
 
-    # Makes runpod refresh this worker. Eg. loaded files, variables etc
+    # Makes runpod refresh this worker. Eg. read files and locally written files.
     if image_url:
         results['refresh_worker'] = True
 
@@ -231,11 +240,14 @@ def generate_image(job):
     return results
 
 
+# TODO Uncomment this in production
+# runpod.serverless.start({"handler": generate_image})
+
 # TODO Remove below in production
 thisdict = {
     "id": "test_id",
     "input": {
-        "prompt": "A brown fox",
+        "prompt": "beautiful lady, (freckles), big smile, ruby eyes, long curly hair, dark makeup, hyperdetailed photography, soft light, head and shoulders portrait, cover",
         "scheduler": "KarrasDPM",
         "guidance_scale": 5,
         "num_inference_steps": 25,
@@ -243,6 +255,3 @@ thisdict = {
 }
 res = generate_image(thisdict)
 print(res)
-
-# TODO Uncomment this in production
-# runpod.serverless.start({"handler": generate_image})
