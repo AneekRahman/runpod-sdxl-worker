@@ -134,6 +134,11 @@ MODELS = ModelHandler()
 
 # ---------------------------------- Helper ---------------------------------- #
 
+# TODO Get resized images
+def get_resized_images():
+    pass
+
+# Turn prompt text into prompt embeddings
 def get_prompt_embeddings(base, text:str):
     compel = Compel(
         tokenizer=[base.tokenizer, base.tokenizer_2] ,
