@@ -26,7 +26,13 @@ def get_diffusion_pipelines():
     '''
     Fetches the Stable Diffusion XL pipelines from the HuggingFace model hub.
     '''
-    common_args = {
+    base_args = {
+        "torch_dtype": torch.float16,
+        # "variant": "fp16",
+        # "use_safetensors": True
+    }
+    
+    refiner_args = {
         "torch_dtype": torch.float16,
         "variant": "fp16",
         "use_safetensors": True
@@ -35,7 +41,7 @@ def get_diffusion_pipelines():
     pipe = fetch_pretrained_model(
         DiffusionPipeline,
         "RunDiffusion/Juggernaut-XL-Lightning", 
-        **common_args)
+        **base_args)
     
     vae = fetch_pretrained_model( 
         AutoencoderKL, 
@@ -46,7 +52,7 @@ def get_diffusion_pipelines():
     refiner = fetch_pretrained_model(
         StableDiffusionXLImg2ImgPipeline, 
         "stabilityai/stable-diffusion-xl-refiner-1.0", 
-        **common_args)
+        **refiner_args)
 
     return pipe, refiner, vae
 
