@@ -51,7 +51,7 @@ INPUT_SCHEMA = {
     'refiner_strength': {
         'type': float,
         'required': False,
-        'default': 0.3
+        'default': 0.5
     },
     'num_images': {
         'type': int,

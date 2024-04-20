@@ -121,10 +121,10 @@ class ModelHandler:
     def load_models(self):
         with concurrent.futures.ThreadPoolExecutor() as executor:
             future_base = executor.submit(self.load_base)
-            # future_refiner = executor.submit(self.load_refiner)
+            future_refiner = executor.submit(self.load_refiner)
 
             self.base = future_base.result()
-            # self.refiner = future_refiner.result()
+            self.refiner = future_refiner.result()
 
 
 # Initiate ModelHandler
