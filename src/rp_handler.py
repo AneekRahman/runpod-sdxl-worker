@@ -191,7 +191,8 @@ def make_scheduler(name, config):
 # Main Entry function
 @torch.inference_mode()
 def generate_image(job):
-    # ------------------ INPUT ------------------
+    # ------------------ PREPARE INPUT ------------------
+    
     # Retrieve inputs
     job_input = job["input"]
 
@@ -205,7 +206,7 @@ def generate_image(job):
     # Return structed/default input after validation
     job_input = validated_input['validated_input']
 
-    # Get image_url
+    # Get prompt_image_url
     prompt_image_url = job_input['image_url']
 
     # Get seed
@@ -216,7 +217,7 @@ def generate_image(job):
     if job_input['loras']:
         MODELS.load_loras(job_input['loras'])
 
-    # ------------------ INPUT END ------------------
+    # ------------------ GENERATE ------------------
 
     # Create diffusers generator using seed
     generator = torch.Generator("cuda").manual_seed(job_input['seed'])
@@ -225,26 +226,28 @@ def generate_image(job):
     MODELS.base.scheduler = make_scheduler(job_input['scheduler'], MODELS.base.scheduler.config)
     
     # Get prompt embeddings from prompt text
-    prompt_conditioning, prompt_pooled = get_prompt_embeddings(job_input['prompt'])
-    negative_conditioning, negative_prompt_pooled = get_prompt_embeddings(job_input['negative_prompt'])
+    prompt_conditioning, prompt_pooled = get_prompt_embeddings(MODELS.base, job_input['prompt'])
+    negative_conditioning, negative_prompt_pooled = get_prompt_embeddings(MODELS.base, job_input['negative_prompt'])
 
-    # If image_url is provided, then run refiner to upscale image
     if prompt_image_url:  
+        # Use image + prompt
+        
         # Load image from URL
         init_image = load_image(prompt_image_url).convert("RGB")
 
-        # TODO Resize image and then run refiner
-
-        # Run refiner to make it more HD
+        # Run using refiner
         output = MODELS.refiner(
-            prompt=job_input['prompt'],
+            prompt_embeds=prompt_conditioning, 
+            pooled_prompt_embeds=prompt_pooled,
+            negative_prompt_embeds=negative_conditioning,
+            negative_pooled_prompt_embeds=negative_prompt_pooled,
             num_inference_steps=job_input['refiner_inference_steps'],
             strength=job_input['refiner_strength'],
             image=init_image,
             generator=generator
         ).images
     else:
-        # -------- Ensemble of expert denoisers --------
+        # ---=== Ensemble of expert denoisers ===---
         
         # Generate image (end at step = num_inference_steps * denoising_end_start)
         output = MODELS.base(
@@ -277,6 +280,8 @@ def generate_image(job):
                 "error": f"RuntimeError: {err}, Stack Trace: {err.__traceback__}",
                 "refresh_worker": True
             }
+        
+    # ------------------ GENERATE END ------------------
 
     # Upload images to cloudflare
     image_urls = _save_and_upload_images(output, job['id'])
