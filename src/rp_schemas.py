@@ -26,22 +26,22 @@ INPUT_SCHEMA = {
     'scheduler': {
         'type': str,
         'required': False,
-        'default': 'DPMSolverMultistep'
+        'default': 'KarrasDPM'
     },
     'num_inference_steps': {
         'type': int,
         'required': False,
-        'default': 35
+        'default': 6
     },
     'refiner_inference_steps': {
         'type': int,
         'required': False,
-        'default': 50
+        'default': 6
     },
     'guidance_scale': {
         'type': float,
         'required': False,
-        'default': 7.0
+        'default': 1.5
     },
     'strength': {
         'type': float,
