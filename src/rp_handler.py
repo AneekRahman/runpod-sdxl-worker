@@ -29,9 +29,9 @@ torch.cuda.empty_cache()
 # ------------------------------- Model Handler ------------------------------ #
 
 # Define Constants
-VAE_AUTOENCODER = "madebyollin/sdxl-vae-fp16-fix"
+BASE_MODEL = "RunDiffusion/Juggernaut-X-v10"
 REFINER_MODEL = "stabilityai/stable-diffusion-xl-refiner-1.0"
-BASE_MODEL = "RunDiffusion/Juggernaut-XL-Lightning"
+VAE_AUTOENCODER = "madebyollin/sdxl-vae-fp16-fix"
 
 # Define ModelHandler Class
 class ModelHandler:
@@ -222,7 +222,7 @@ def generate_image(job):
         output = MODELS.refiner(
             prompt=job_input['prompt'],
             num_inference_steps=job_input['refiner_inference_steps'],
-            strength=job_input['strength'],
+            strength=job_input['refiner_strength'],
             image=init_image,
             generator=generator
         ).images
@@ -246,7 +246,7 @@ def generate_image(job):
         #     output = MODELS.refiner(
         #         prompt=job_input['prompt'],
         #         num_inference_steps=job_input['refiner_inference_steps'],
-        #         strength=job_input['strength'],
+        #         strength=job_input['refiner_strength'],
         #         image=output,
         #         num_images_per_prompt=job_input['num_images'],
         #         generator=generator
@@ -284,11 +284,11 @@ thisdict = {
     "input": {
         "prompt": "beautiful lady, (freckles), big smile, brown hazel eyes, Full Bangs, dark makeup, hyperdetailed photography, soft light, head and shoulders portrait, cover",
         "seed" : 1000,
-        "loras" : [{
-            "lora_name" : "CiroN2022/toy-face",
-            "file_name" : "toy_face_sdxl.safetensors",
-            # "lora_weight" : 1.0,
-        }]
+        # "loras" : [{
+        #     "lora_name" : "CiroN2022/toy-face",
+        #     "file_name" : "toy_face_sdxl.safetensors",
+        #     "lora_weight" : 1.0,
+        # }]
     }
 }
 res = generate_image(thisdict)

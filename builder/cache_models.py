@@ -40,7 +40,7 @@ def get_diffusion_pipelines():
 
     pipe = fetch_pretrained_model(
         DiffusionPipeline,
-        "RunDiffusion/Juggernaut-XL-Lightning", 
+        "RunDiffusion/Juggernaut-X-v10", 
         **base_args)
     
     vae = fetch_pretrained_model( 

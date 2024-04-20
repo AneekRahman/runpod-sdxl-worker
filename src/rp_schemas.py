@@ -8,6 +8,11 @@ INPUT_SCHEMA = {
         'required': False,
         'default': None
     },
+    'image_url': {
+        'type': str,
+        'required': False,
+        'default': None
+    },
     'height': {
         'type': int,
         'required': False,
@@ -26,32 +31,27 @@ INPUT_SCHEMA = {
     'scheduler': {
         'type': str,
         'required': False,
-        'default': 'KarrasDPM'
+        'default': 'DPMSolverMultistep'
     },
     'num_inference_steps': {
         'type': int,
         'required': False,
-        'default': 6
+        'default': 35
     },
     'refiner_inference_steps': {
         'type': int,
         'required': False,
-        'default': 6
+        'default': 35
     },
     'guidance_scale': {
         'type': float,
         'required': False,
-        'default': 1.5
+        'default': 7.0
     },
-    'strength': {
+    'refiner_strength': {
         'type': float,
         'required': False,
         'default': 0.3
-    },
-    'image_url': {
-        'type': str,
-        'required': False,
-        'default': None
     },
     'num_images': {
         'type': int,
