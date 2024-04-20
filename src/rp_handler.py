@@ -42,25 +42,25 @@ class ModelHandler:
         self.load_models()
 
     def load_loras(self, loras: list[str]):
-      # List of adapter_name and adapter_weights of loras
-      adapter_names = []
-      adapter_weights = []
+        # List of adapter_name and adapter_weights of loras
+        adapter_names = []
+        adapter_weights = []
       
-      # Loop through each loraName (Hugginface lora name)
-      for loraName in loras:
-        name = loraName.split('/')[1]
-        
-        # Append the name and weight to list
-        adapter_names.append(name)
-        adapter_weights.append(1.0)
-        
-        # Load the loras into BASE pipeline
-        self.base.load_lora_weights(loraName, weight_name=name + ".safetensors", adapter_name=name)
+        # Loop through each loraName (Hugginface lora name)
+        for loraName in loras:
+            name = loraName.split('/')[1]
+            
+            # Append the name and weight to list
+            adapter_names.append(name)
+            adapter_weights.append(1.0)
+            
+            # Load the loras into BASE pipeline
+            self.base.load_lora_weights(loraName, weight_name=name + ".safetensors", adapter_name=name)
 
-        # Set the weight of each lora
-        self.base.set_adapters(adapter_names, adapter_weights=adapter_weights)
-        
-        print("Loaded lora with loraName: ", loraName)
+            # Set the weight of each lora
+            self.base.set_adapters(adapter_names, adapter_weights=adapter_weights)
+            
+            print("Loaded lora with loraName: ", loraName)
 
     # Load base SDXL model
     def load_base(self):
@@ -198,7 +198,7 @@ def generate_image(job):
         
     # Load the lora if available
     if job_input['loras']:
-      MODELS.load_loras(job_input['loras'])
+        MODELS.load_loras(job_input['loras'])
 
     # ------------------ INPUT END ------------------
 

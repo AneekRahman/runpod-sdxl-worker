@@ -26,7 +26,7 @@ INPUT_SCHEMA = {
     'scheduler': {
         'type': str,
         'required': False,
-        'default': 'DDIM'
+        'default': 'KarrasDPM'
     },
     'num_inference_steps': {
         'type': int,
