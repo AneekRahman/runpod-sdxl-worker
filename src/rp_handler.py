@@ -19,6 +19,8 @@ from diffusers import (
     DPMSolverSDEScheduler
 )
 
+from compel import Compel, ReturnedEmbeddingsType
+
 import runpod
 from runpod.serverless.utils import rp_upload, rp_cleanup
 from runpod.serverless.utils.rp_validator import validate
@@ -132,6 +134,15 @@ MODELS = ModelHandler()
 
 # ---------------------------------- Helper ---------------------------------- #
 
+def get_prompt_embeddings(base, text:str):
+    compel = Compel(
+        tokenizer=[base.tokenizer, base.tokenizer_2] ,
+        text_encoder=[base.text_encoder, base.text_encoder_2],
+        returned_embeddings_type=ReturnedEmbeddingsType.PENULTIMATE_HIDDEN_STATES_NON_NORMALIZED,
+        requires_pooled=[False, True])
+    
+    return compel(text)
+
 # Upload images to cloudflare
 def _save_and_upload_images(images, job_id):
     # Make temp folder to save the image 
@@ -212,6 +223,10 @@ def generate_image(job):
 
     # Set the appropriate scheduler
     MODELS.base.scheduler = make_scheduler(job_input['scheduler'], MODELS.base.scheduler.config)
+    
+    # Get prompt embeddings from prompt text
+    prompt_conditioning, prompt_pooled = get_prompt_embeddings(job_input['prompt'])
+    negative_conditioning, negative_prompt_pooled = get_prompt_embeddings(job_input['negative_prompt'])
 
     # If image_url is provided, then run refiner to upscale image
     if prompt_image_url:  
@@ -230,10 +245,13 @@ def generate_image(job):
         ).images
     else:
         # -------- Ensemble of expert denoisers --------
-        # Generate image using pipe
+        
+        # Generate image (end at step = num_inference_steps * denoising_end_start)
         output = MODELS.base(
-            prompt=job_input['prompt'],
-            negative_prompt=job_input['negative_prompt'],
+            prompt_embeds=prompt_conditioning, 
+            pooled_prompt_embeds=prompt_pooled,
+            negative_prompt_embeds=negative_conditioning,
+            negative_pooled_prompt_embeds=negative_prompt_pooled,
             height=job_input['height'],
             width=job_input['width'],
             num_inference_steps=job_input['num_inference_steps'],
@@ -244,6 +262,7 @@ def generate_image(job):
             generator=generator
         ).images
 
+        # Refine image (start from step = num_inference_steps * denoising_end_start)
         try:
             output = MODELS.refiner(
                 prompt=job_input['prompt'],
