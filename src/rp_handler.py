@@ -29,7 +29,7 @@ torch.cuda.empty_cache()
 # ------------------------------- Model Handler ------------------------------ #
 
 # Define Constants
-BASE_MODEL = "RunDiffusion/Juggernaut-X-v10"
+BASE_MODEL = "RunDiffusion/Juggernaut-XL-Lightning"
 REFINER_MODEL = "stabilityai/stable-diffusion-xl-refiner-1.0"
 VAE_AUTOENCODER = "madebyollin/sdxl-vae-fp16-fix"
 
