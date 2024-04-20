@@ -32,7 +32,7 @@ torch.cuda.empty_cache()
 # Define Constants
 VAE_AUTOENCODER = "madebyollin/sdxl-vae-fp16-fix"
 REFINER_MODEL = "stabilityai/stable-diffusion-xl-refiner-1.0"
-BASE_MODEL = "RunDiffusion/Juggernaut-X-v10"
+BASE_MODEL = "RunDiffusion/Juggernaut-XL-v9"
 
 # Define ModelHandler Class
 class ModelHandler:
@@ -284,7 +284,7 @@ thisdict = {
     "id": "test_id",
     "input": {
         "prompt": "beautiful lady, (freckles), big smile, brown hazel eyes, Full Bangs, dark makeup, hyperdetailed photography, soft light, head and shoulders portrait, cover",
-        "scheduler": "DPMSolverMultistep",
+        "scheduler": "KarrasDPM",
         "guidance_scale": 5,
         "num_inference_steps": 25,
         "seed" : 1000,
