@@ -64,8 +64,8 @@ INPUT_SCHEMA = {
         'required': False,
         'default': None
     },
-    'lora_name': {
-        'type': str,
+    'loras': {
+        'type': list[str],
         'required': False,
         'default': None
     },

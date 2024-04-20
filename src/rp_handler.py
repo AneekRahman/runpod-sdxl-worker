@@ -41,11 +41,26 @@ class ModelHandler:
         self.refiner = None
         self.load_models()
 
-    def load_lora(self, loraName: str):
-      nameChunks = loraName.split('/')
-      filename = nameChunks[1] + ".safetensors"
-      self.base.load_lora_weights(loraName, weight_name=filename, adapter_name=nameChunks[1])
-      print("Loaded lora with filename: ", filename)
+    def load_loras(self, loras: list[str]):
+      # List of adapter_name and adapter_weights of loras
+      adapter_names = []
+      adapter_weights = []
+      
+      # Loop through each loraName (Hugginface lora name)
+      for loraName in loras:
+        name = loraName.split('/')[1]
+        
+        # Append the name and weight to list
+        adapter_names.append(name)
+        adapter_weights.append(1.0)
+        
+        # Load the loras into BASE pipeline
+        self.base.load_lora_weights(loraName, weight_name=name + ".safetensors", adapter_name=name)
+
+        # Set the weight of each lora
+        self.base.set_adapters(adapter_names, adapter_weights=adapter_weights)
+        
+        print("Loaded lora with loraName: ", loraName)
 
     # Load base SDXL model
     def load_base(self):
@@ -182,8 +197,8 @@ def generate_image(job):
         job_input['seed'] = int.from_bytes(os.urandom(2), "big")
         
     # Load the lora if available
-    if job_input['lora_name']:
-      MODELS.load_lora(job_input['lora_name'])
+    if job_input['loras']:
+      MODELS.load_loras(job_input['loras'])
 
     # ------------------ INPUT END ------------------
 
@@ -250,7 +265,7 @@ def generate_image(job):
     }
 
     # Makes runpod refresh this worker. Eg. read files and locally written files.
-    if prompt_image_url or job_input['lora_name']:
+    if prompt_image_url or job_input['loras']:
         results['refresh_worker'] = True
 
     # Return results to client
@@ -268,7 +283,7 @@ thisdict = {
         "scheduler": "KarrasDPM",
         "guidance_scale": 5,
         "num_inference_steps": 25,
-        "lora_name" : "nerijs/pixel-art-xl"
+        "loras" : ["nerijs/pixel-art-xl"]
     }
 }
 res = generate_image(thisdict)
