@@ -1,7 +1,7 @@
 # builder/model_fetcher.py
 
 import torch
-from diffusers import StableDiffusionXLPipeline, StableDiffusionXLImg2ImgPipeline, AutoencoderKL
+from diffusers import DiffusionPipeline, StableDiffusionXLImg2ImgPipeline, AutoencoderKL
 
 
 # Cache model function
@@ -33,7 +33,7 @@ def get_diffusion_pipelines():
     }
 
     pipe = fetch_pretrained_model(
-        StableDiffusionXLPipeline,
+        DiffusionPipeline,
         "RunDiffusion/Juggernaut-XL-Lightning", 
         **common_args)
     

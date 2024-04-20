@@ -5,10 +5,9 @@ Contains the handler function that will be called by the serverless.
 import os
 import base64
 import concurrent.futures
-import subprocess
 
 import torch
-from diffusers import StableDiffusionXLPipeline, StableDiffusionXLImg2ImgPipeline, AutoencoderKL
+from diffusers import DiffusionPipeline, StableDiffusionXLImg2ImgPipeline, AutoencoderKL
 from diffusers.utils import load_image
 
 from diffusers import (
@@ -75,12 +74,12 @@ class ModelHandler:
         )
 
         # Get the SDXL model
-        base_pipe = StableDiffusionXLPipeline.from_pretrained(
+        base_pipe = DiffusionPipeline.from_pretrained(
             BASE_MODEL,
             vae=vae,
             torch_dtype=torch.float16, 
-            variant="fp16", 
-            use_safetensors=True, 
+            # variant="fp16", 
+            # use_safetensors=True, 
             add_watermarker=False,
             safety_checker=None # No safety checking
         )
