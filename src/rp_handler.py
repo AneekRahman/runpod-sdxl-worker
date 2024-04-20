@@ -16,6 +16,7 @@ from diffusers import (
     DDIMScheduler,
     EulerDiscreteScheduler,
     DPMSolverMultistepScheduler,
+    DPMSolverSDEScheduler
 )
 
 import runpod
@@ -172,6 +173,7 @@ def make_scheduler(name, config):
         "K_EULER": EulerDiscreteScheduler.from_config(config),
         "DPMSolverMultistep": DPMSolverMultistepScheduler.from_config(config),
         "KarrasDPM": KarrasDPM.from_config(config),
+        "DPM++SDE": DPMSolverSDEScheduler.from_config(config),
     }[name]
 
 
@@ -282,8 +284,9 @@ def generate_image(job):
 thisdict = {
     "id": "test_id",
     "input": {
-        "prompt": "beautiful lady, (freckles), big smile, brown hazel eyes, Full Bangs, dark makeup, hyperdetailed photography, soft light, head and shoulders portrait, cover",
-        "seed" : 1000,
+        "prompt": "A beautiful portrait photograph of a dragon with diamond and gemstone scales, opal eyes, cinematic, gem, diamond, crystal, fantasy art, hyperdetailed photograph, shiny scales, 8k resolution,",
+        "seed" : 3913886038,
+        "negative_prompt" : "CGI, Unreal, Airbrushed, Digital"
         # "loras" : [{
         #     "lora_name" : "CiroN2022/toy-face",
         #     "file_name" : "toy_face_sdxl.safetensors",

@@ -31,22 +31,22 @@ INPUT_SCHEMA = {
     'scheduler': {
         'type': str,
         'required': False,
-        'default': 'DPMSolverMultistep'
+        'default': 'DPM++SDE'
     },
     'num_inference_steps': {
         'type': int,
         'required': False,
-        'default': 35
+        'default': 5
     },
     'refiner_inference_steps': {
         'type': int,
         'required': False,
-        'default': 35
+        'default': 5
     },
     'guidance_scale': {
         'type': float,
         'required': False,
-        'default': 7.0
+        'default': 2
     },
     'refiner_strength': {
         'type': float,
