@@ -26,12 +26,12 @@ INPUT_SCHEMA = {
     'scheduler': {
         'type': str,
         'required': False,
-        'default': 'KarrasDPM'
+        'default': 'DPMSolverMultistep'
     },
     'num_inference_steps': {
         'type': int,
         'required': False,
-        'default': 25
+        'default': 35
     },
     'refiner_inference_steps': {
         'type': int,
@@ -41,7 +41,7 @@ INPUT_SCHEMA = {
     'guidance_scale': {
         'type': float,
         'required': False,
-        'default': 7.5
+        'default': 7.0
     },
     'strength': {
         'type': float,
@@ -57,7 +57,7 @@ INPUT_SCHEMA = {
         'type': int,
         'required': False,
         'default': 1,
-        'constraints': lambda img_count: 3 > img_count > 0
+        'constraints': lambda val: val == 1 or val == 4
     },
     'high_noise_frac': {
         'type': float,

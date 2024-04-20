@@ -34,7 +34,7 @@ def get_diffusion_pipelines():
 
     pipe = fetch_pretrained_model(
         StableDiffusionXLPipeline,
-        "RunDiffusion/Juggernaut-XL-v9", 
+        "RunDiffusion/Juggernaut-X-v10", 
         **common_args)
     
     vae = fetch_pretrained_model( 
