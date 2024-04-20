@@ -106,18 +106,24 @@ MODELS = ModelHandler()
 
 # ---------------------------------- Helper ---------------------------------- #
 
-# Uplad images to cloudflare
+# Upload images to cloudflare
 def _save_and_upload_images(images, job_id):
+    # Make temp folder to save the image 
     os.makedirs(f"/{job_id}", exist_ok=True)
+    
     image_urls = []
+    
+    # Go through images
     for index, image in enumerate(images):
         image_path = os.path.join(f"/{job_id}", f"{index}.png")
         image.save(image_path)
 
+        # Try to upload image to Cloudflare R2
         if os.environ.get('BUCKET_ENDPOINT_URL', False):
             image_url = rp_upload.upload_image(job_id, image_path)
             image_urls.append(image_url)
         else:
+            # Else, return the image data in base64
             with open(image_path, "rb") as image_file:
                 image_data = base64.b64encode(
                     image_file.read()).decode("utf-8")
@@ -240,10 +246,10 @@ def generate_image(job):
     return results
 
 
-# TODO Uncomment this in production
+# TODO Uncomment below line in production
 # runpod.serverless.start({"handler": generate_image})
 
-# TODO Remove below in production
+# TODO Remove below ALL lines in production
 thisdict = {
     "id": "test_id",
     "input": {
