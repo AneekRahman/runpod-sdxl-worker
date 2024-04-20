@@ -41,26 +41,30 @@ class ModelHandler:
         self.refiner = None
         self.load_models()
 
-    def load_loras(self, loras: list[str]):
+    def load_loras(self, loras: list):
         # List of adapter_name and adapter_weights of loras
         adapter_names = []
         adapter_weights = []
       
         # Loop through each loraName (Hugginface lora name)
-        for loraName in loras:
-            name = loraName.split('/')[1]
+        for loraObject in loras:
+            lora_name = loraObject["lora_name"]
+            lora_weight = loraObject.get("lora_weight", 1.0)
             
             # Append the name and weight to list
-            adapter_names.append(name)
-            adapter_weights.append(1.0)
+            adapter_names.append(lora_name)
+            adapter_weights.append(lora_weight)
             
             # Load the loras into BASE pipeline
-            self.base.load_lora_weights(loraName, weight_name=name + ".safetensors", adapter_name=name)
-
-            # Set the weight of each lora
-            self.base.set_adapters(adapter_names, adapter_weights=adapter_weights)
-            
-            print("Loaded lora with loraName: ", loraName)
+            self.base.load_lora_weights(
+                lora_name, 
+                weight_name=loraObject["file_name"], 
+                adapter_name=lora_name)
+                        
+            print("Loaded lora: ", lora_name)
+        
+        # Set the weight of loras
+        self.base.set_adapters(adapter_names, adapter_weights=adapter_weights)
 
     # Load base SDXL model
     def load_base(self):
@@ -279,11 +283,16 @@ def generate_image(job):
 thisdict = {
     "id": "test_id",
     "input": {
-        "prompt": "beautiful lady, (freckles), big smile, ruby eyes, long curly hair, dark makeup, hyperdetailed photography, soft light, head and shoulders portrait, cover",
+        "prompt": "toy_face of a hacker with a hoodie",
         "scheduler": "KarrasDPM",
         "guidance_scale": 5,
         "num_inference_steps": 25,
-        "loras" : ["nerijs/pixel-art-xl"]
+        "seed" : 1000,
+        "loras" : [{
+            "lora_name" : "CiroN2022/toy-face",
+            "file_name" : "toy_face_sdxl.safetensors",
+            # "lora_weight" : 1.0,
+        }]
     }
 }
 res = generate_image(thisdict)
