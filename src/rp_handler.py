@@ -5,6 +5,7 @@ Contains the handler function that will be called by the serverless.
 import os
 import base64
 import concurrent.futures
+import subprocess
 
 import torch
 from diffusers import StableDiffusionXLPipeline, StableDiffusionXLImg2ImgPipeline, AutoencoderKL
@@ -39,6 +40,12 @@ class ModelHandler:
         self.base = None
         self.refiner = None
         self.load_models()
+
+    def load_lora(self, loraName: str):
+      nameChunks = loraName.split('/')
+      filename = nameChunks[1] + ".safetensors"
+      self.base.load_lora_weights(loraName, weight_name=filename, adapter_name=nameChunks[1])
+      print("Loaded lora with filename: ", filename)
 
     # Load base SDXL model
     def load_base(self):
@@ -168,11 +175,15 @@ def generate_image(job):
     job_input = validated_input['validated_input']
 
     # Get image_url
-    image_url = job_input['image_url']
+    prompt_image_url = job_input['image_url']
 
     # Get seed
     if job_input['seed'] is None:
         job_input['seed'] = int.from_bytes(os.urandom(2), "big")
+        
+    # Load the lora if available
+    if job_input['lora_name']:
+      MODELS.load_lora(job_input['lora_name'])
 
     # ------------------ INPUT END ------------------
 
@@ -183,9 +194,9 @@ def generate_image(job):
     MODELS.base.scheduler = make_scheduler(job_input['scheduler'], MODELS.base.scheduler.config)
 
     # If image_url is provided, then run refiner to upscale image
-    if image_url:  
+    if prompt_image_url:  
         # Load image from URL
-        init_image = load_image(image_url).convert("RGB")
+        init_image = load_image(prompt_image_url).convert("RGB")
 
         # TODO Resize image and then run refiner
 
@@ -239,7 +250,7 @@ def generate_image(job):
     }
 
     # Makes runpod refresh this worker. Eg. read files and locally written files.
-    if image_url:
+    if prompt_image_url or job_input['lora_name']:
         results['refresh_worker'] = True
 
     # Return results to client
@@ -257,6 +268,7 @@ thisdict = {
         "scheduler": "KarrasDPM",
         "guidance_scale": 5,
         "num_inference_steps": 25,
+        "lora_name" : "nerijs/pixel-art-xl"
     }
 }
 res = generate_image(thisdict)

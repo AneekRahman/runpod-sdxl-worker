@@ -64,4 +64,9 @@ INPUT_SCHEMA = {
         'required': False,
         'default': None
     },
+    'lora_name': {
+        'type': str,
+        'required': False,
+        'default': None
+    },
 }
