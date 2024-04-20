@@ -59,7 +59,7 @@ INPUT_SCHEMA = {
         'default': 1,
         'constraints': lambda val: val == 1 or val == 4
     },
-    'high_noise_frac': {
+    'denoising_end_start': {
         'type': float,
         'required': False,
         'default': None

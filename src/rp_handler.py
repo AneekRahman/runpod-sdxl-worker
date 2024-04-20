@@ -229,6 +229,7 @@ def generate_image(job):
             generator=generator
         ).images
     else:
+        # -------- Ensemble of expert denoisers --------
         # Generate image using pipe
         output = MODELS.base(
             prompt=job_input['prompt'],
@@ -237,27 +238,26 @@ def generate_image(job):
             width=job_input['width'],
             num_inference_steps=job_input['num_inference_steps'],
             guidance_scale=job_input['guidance_scale'],
-            denoising_end=job_input['high_noise_frac'],
-            # output_type="latent",
+            denoising_end=job_input['denoising_end_start'],
+            output_type="latent",
             num_images_per_prompt=job_input['num_images'],
             generator=generator
         ).images
 
-        # Disable refiner
-        # try:
-        #     output = MODELS.refiner(
-        #         prompt=job_input['prompt'],
-        #         num_inference_steps=job_input['refiner_inference_steps'],
-        #         strength=job_input['refiner_strength'],
-        #         image=output,
-        #         num_images_per_prompt=job_input['num_images'],
-        #         generator=generator
-        #     ).images
-        # except RuntimeError as err:
-        #     return {
-        #         "error": f"RuntimeError: {err}, Stack Trace: {err.__traceback__}",
-        #         "refresh_worker": True
-        #     }
+        try:
+            output = MODELS.refiner(
+                prompt=job_input['prompt'],
+                num_inference_steps=job_input['refiner_inference_steps'],
+                strength=job_input['refiner_strength'],
+                image=output,
+                num_images_per_prompt=job_input['num_images'],
+                generator=generator
+            ).images
+        except RuntimeError as err:
+            return {
+                "error": f"RuntimeError: {err}, Stack Trace: {err.__traceback__}",
+                "refresh_worker": True
+            }
 
     # Upload images to cloudflare
     image_urls = _save_and_upload_images(output, job['id'])
