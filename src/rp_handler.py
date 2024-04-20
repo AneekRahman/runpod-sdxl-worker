@@ -30,7 +30,7 @@ torch.cuda.empty_cache()
 # ------------------------------- Model Handler ------------------------------ #
 
 # Define Constants
-BASE_MODEL = "RunDiffusion/Juggernaut-XL-Lightning"
+BASE_MODEL = "RunDiffusion/Juggernaut-X-v10"
 REFINER_MODEL = "stabilityai/stable-diffusion-xl-refiner-1.0"
 VAE_AUTOENCODER = "madebyollin/sdxl-vae-fp16-fix"
 
@@ -284,7 +284,7 @@ def generate_image(job):
 thisdict = {
     "id": "test_id",
     "input": {
-        "prompt": "A beautiful portrait photograph of a dragon with diamond and gemstone scales, opal eyes, cinematic, gem, diamond, crystal, fantasy art, hyperdetailed photograph, shiny scales, 8k resolution,",
+        "prompt": "Portrait of a kind of a young man, twenty years with brown hair, childish, droopy eyes, unconventional beauty, moody atmosphere by Saul Leiter",
         "seed" : 3913886038,
         "negative_prompt" : "CGI, Unreal, Airbrushed, Digital"
         # "loras" : [{

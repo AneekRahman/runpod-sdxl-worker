@@ -36,22 +36,22 @@ INPUT_SCHEMA = {
     'num_inference_steps': {
         'type': int,
         'required': False,
-        'default': 5
+        'default': 35
     },
     'refiner_inference_steps': {
         'type': int,
         'required': False,
-        'default': 5
+        'default': 35
     },
     'guidance_scale': {
         'type': float,
         'required': False,
-        'default': 2
+        'default': 7
     },
     'refiner_strength': {
         'type': float,
         'required': False,
-        'default': 0.5
+        'default': 0.3
     },
     'num_images': {
         'type': int,
