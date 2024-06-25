@@ -134,10 +134,6 @@ MODELS = ModelHandler()
 
 # ---------------------------------- Helper ---------------------------------- #
 
-# TODO Get resized images
-def get_resized_images():
-    pass
-
 # Turn prompt text into prompt embeddings
 def get_prompt_embeddings(base, text:str):
     compel = Compel(
@@ -235,7 +231,7 @@ def generate_image(job):
     negative_conditioning, negative_prompt_pooled = get_prompt_embeddings(MODELS.base, job_input['negative_prompt'])
 
     if prompt_image_url:  
-        # Use image + prompt
+        # ---=== Use image + prompt ===---
         
         # Load image from URL
         init_image = load_image(prompt_image_url).convert("RGB")
