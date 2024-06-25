@@ -91,7 +91,7 @@ class ModelHandler:
         base_pipe = base_pipe.to("cuda", silence_dtype_warnings=True)
 
         # Enable Xformers for memory efficieny. BUT SLOWER!!
-        base_pipe.enable_xformers_memory_efficient_attention()
+        # base_pipe.enable_xformers_memory_efficient_attention()
         return base_pipe
 
     def load_refiner(self):
@@ -116,7 +116,7 @@ class ModelHandler:
         refiner_pipe = refiner_pipe.to("cuda", silence_dtype_warnings=True)
 
         # Enable Xformers for memory efficieny. BUT SLOWER!!
-        refiner_pipe.enable_xformers_memory_efficient_attention()
+        # refiner_pipe.enable_xformers_memory_efficient_attention()
         return refiner_pipe
 
     # Load models into memory
