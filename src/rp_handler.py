@@ -217,7 +217,10 @@ def generate_image(job):
     # Load the lora if available
     if job_input['loras']:
         MODELS.load_loras(job_input['loras'])
-
+    else:
+        MODELS.base.set_adapters([], adapter_weights=[])
+        MODELS.base.disable_lora()
+        
     # ------------------ GENERATE ------------------
 
     # Create diffusers generator using seed
@@ -292,10 +295,6 @@ def generate_image(job):
         "images": image_urls,
         "input": job["input"]
     }
-
-    # Makes runpod refresh this worker. Eg. read files and locally written files.
-    if prompt_image_url or job_input['loras']:
-        results['refresh_worker'] = True
 
     # Return results to client
     return results
