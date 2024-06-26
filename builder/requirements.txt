@@ -2,16 +2,12 @@ runpod==1.4.2
 hf_transfer
 
 diffusers==0.29.1
-transformers==4.40.0
-accelerate==0.29.3
+transformers==4.41.2
+accelerate==0.31.0
 safetensors==0.4.3
-scipy==1.13.0
-numpy>=1.26.4
-PyWavelets>=1.1.1
-invisible-watermark==0.2.0
-opencv-python>=4.8.1.78
-xformers==0.0.20
-peft==0.10.0
-torchsde==0.2.6
+scipy==1.14.0
+numpy>=2.0.0
+xformers==0.0.26.post1
 compel==2.0.2
-torch==2.0.1
+torchsde==0.2.6
+torch==2.3.1

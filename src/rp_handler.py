@@ -290,8 +290,7 @@ def generate_image(job):
     # Response object
     results = {
         "images": image_urls,
-        "image_url": image_urls[0],
-        "seed": job_input['seed']
+        "input": job["input"]
     }
 
     # Makes runpod refresh this worker. Eg. read files and locally written files.
