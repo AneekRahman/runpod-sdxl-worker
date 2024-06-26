@@ -1,8 +1,8 @@
 # builder/model_fetcher.py
 
+from rp_handler import BASE_MODEL, REFINER_MODEL, VAE_AUTOENCODER
 import torch
 from diffusers import DiffusionPipeline, StableDiffusionXLImg2ImgPipeline, AutoencoderKL
-
 
 # Cache model function
 def fetch_pretrained_model(model_class, model_name, **kwargs):
@@ -40,18 +40,18 @@ def get_diffusion_pipelines():
 
     pipe = fetch_pretrained_model(
         DiffusionPipeline,
-        "RunDiffusion/Juggernaut-X-v10", 
+        BASE_MODEL, 
         **base_args)
     
     vae = fetch_pretrained_model( 
         AutoencoderKL, 
-        "madebyollin/sdxl-vae-fp16-fix", 
+        VAE_AUTOENCODER, 
         **{"torch_dtype": torch.float16})
     
     print("Loaded VAE")
     refiner = fetch_pretrained_model(
         StableDiffusionXLImg2ImgPipeline, 
-        "stabilityai/stable-diffusion-xl-refiner-1.0", 
+        REFINER_MODEL, 
         **refiner_args)
 
     return pipe, refiner, vae
