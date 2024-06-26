@@ -9,5 +9,6 @@ scipy==1.14.0
 numpy==1.26.4
 xformers==0.0.22
 compel==2.0.2
+peft==0.10.0
 torchsde==0.2.6
 torch==2.0.1
