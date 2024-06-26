@@ -214,12 +214,13 @@ def generate_image(job):
     if job_input['seed'] is None:
         job_input['seed'] = int.from_bytes(os.urandom(2), "big")
         
+    # TODO FIX LORAS - NOT WORKING
     # Load the lora if available
-    if job_input['loras']:
-        MODELS.load_loras(job_input['loras'])
-    else:
-        MODELS.base.set_adapters([], adapter_weights=[])
-        MODELS.base.disable_lora()
+    # if job_input['loras']:
+    #     MODELS.load_loras(job_input['loras'])
+    # else:
+    #     MODELS.base.set_adapters([], adapter_weights=[])
+    #     MODELS.base.disable_lora()
         
     # ------------------ GENERATE ------------------
 
@@ -301,21 +302,21 @@ def generate_image(job):
 
 
 # TODO Uncomment below line in production
-# runpod.serverless.start({"handler": generate_image})
+runpod.serverless.start({"handler": generate_image})
 
 # TODO Remove below ALL lines in production
-thisdict = {
-    "id": "test_id",
-    "input": {
-        "prompt": "Portrait of a kind of a young man, twenty years with brown hair, childish, droopy eyes, unconventional beauty, moody atmosphere by Saul Leiter",
-        "seed" : 3913886038,
-        "negative_prompt" : "CGI, Unreal, Airbrushed, Digital",
-        "loras" : [{
-            "lora_name" : "CiroN2022/toy-face",
-            "file_name" : "toy_face_sdxl.safetensors",
-            "lora_weight" : 1.0,
-        }]
-    }
-}
-res = generate_image(thisdict)
-print(res)
+# thisdict = {
+#     "id": "test_id",
+#     "input": {
+#         "prompt": "Portrait of a kind of a young man, twenty years with brown hair, childish, droopy eyes, unconventional beauty, moody atmosphere by Saul Leiter",
+#         "seed" : 3913886038,
+#         "negative_prompt" : "CGI, Unreal, Airbrushed, Digital",
+#         "loras" : [{
+#             "lora_name" : "CiroN2022/toy-face",
+#             "file_name" : "toy_face_sdxl.safetensors",
+#             "lora_weight" : 1.0,
+#         }]
+#     }
+# }
+# res = generate_image(thisdict)
+# print(res)
