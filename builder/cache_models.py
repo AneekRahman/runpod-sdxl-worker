@@ -1,8 +1,11 @@
 # builder/model_fetcher.py
-
-from rp_handler import BASE_MODEL, REFINER_MODEL, VAE_AUTOENCODER
 import torch
 from diffusers import DiffusionPipeline, StableDiffusionXLImg2ImgPipeline, AutoencoderKL
+
+# Define Constants
+BASE_MODEL = "RunDiffusion/Juggernaut-X-v10"
+REFINER_MODEL = "stabilityai/stable-diffusion-xl-refiner-1.0"
+VAE_AUTOENCODER = "madebyollin/sdxl-vae-fp16-fix"
 
 # Cache model function
 def fetch_pretrained_model(model_class, model_name, **kwargs):
