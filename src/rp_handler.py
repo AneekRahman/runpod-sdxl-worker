@@ -309,12 +309,12 @@ thisdict = {
     "input": {
         "prompt": "Portrait of a kind of a young man, twenty years with brown hair, childish, droopy eyes, unconventional beauty, moody atmosphere by Saul Leiter",
         "seed" : 3913886038,
-        "negative_prompt" : "CGI, Unreal, Airbrushed, Digital"
-        # "loras" : [{
-        #     "lora_name" : "CiroN2022/toy-face",
-        #     "file_name" : "toy_face_sdxl.safetensors",
-        #     "lora_weight" : 1.0,
-        # }]
+        "negative_prompt" : "CGI, Unreal, Airbrushed, Digital",
+        "loras" : [{
+            "lora_name" : "CiroN2022/toy-face",
+            "file_name" : "toy_face_sdxl.safetensors",
+            "lora_weight" : 1.0,
+        }]
     }
 }
 res = generate_image(thisdict)
